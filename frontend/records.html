@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Inforia - 成績</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="app-shell">
+
+  <header class="app-header">
+    <div class="logo">Inforia</div>
+  </header>
+
+  <main class="app-main">
+    <div class="section-title">学習の成果</div>
+    <div class="stats-grid">
+      <div class="stat-tile">
+        <div class="stat-label">レベル</div>
+        <div class="stat-value" id="statLevel">1</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">累計XP</div>
+        <div class="stat-value" id="statXp">0<span class="unit">XP</span></div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">連続学習日数</div>
+        <div class="stat-value" id="statStreak">0<span class="unit">日</span></div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">正答率</div>
+        <div class="stat-value" id="statAccuracy">0<span class="unit">%</span></div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">解答した問題数</div>
+        <div class="stat-value" id="statAnswered">0<span class="unit">問</span></div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">正解した問題数</div>
+        <div class="stat-value" id="statCorrect">0<span class="unit">問</span></div>
+      </div>
+    </div>
+
+    <div class="section-title">ジャンル別 得意・苦手分析</div>
+    <div class="card" id="analysisSummaryCard"></div>
+    <div id="genreAnalysisList"></div>
+
+    <div class="section-title">バッジコレクション</div>
+    <div class="badges-grid" id="badgesGrid"></div>
+  </main>
+
+  <nav class="bottom-nav" id="bottomNav"></nav>
+</div>
+
+<script src="js/icons.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/glossary.js"></script>
+<script src="js/state.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/records.js"></script>
+</body>
+</html>

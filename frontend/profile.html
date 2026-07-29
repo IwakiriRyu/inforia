@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Inforia - マイページ</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="app-shell">
+
+  <header class="app-header">
+    <div class="logo">Inforia</div>
+  </header>
+
+  <main class="app-main">
+    <div class="profile-hero">
+      <div class="avatar" id="avatarLevel">Lv.1</div>
+      <div class="email" id="userEmail"></div>
+    </div>
+
+    <div class="profile-list">
+      <div class="profile-list-item">
+        <span class="label">レベル</span>
+        <span class="value" id="infoLevel"></span>
+      </div>
+      <div class="profile-list-item">
+        <span class="label">累計XP</span>
+        <span class="value" id="infoXp"></span>
+      </div>
+      <div class="profile-list-item">
+        <span class="label">連続学習日数</span>
+        <span class="value" id="infoStreak"></span>
+      </div>
+      <div class="profile-list-item">
+        <span class="label">獲得バッジ数</span>
+        <span class="value" id="infoBadges"></span>
+      </div>
+      <div class="profile-list-item">
+        <span class="label">登録日</span>
+        <span class="value" id="infoRegistered"></span>
+      </div>
+    </div>
+
+    <div class="section-title">設定</div>
+    <div class="card">
+      <div class="settings-row">
+        <div>
+          <div class="settings-row-title">学習リマインダー</div>
+          <div class="settings-row-desc">毎日決まった時間に学習を促す通知(現在はモック設定です)</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="notifToggle" />
+          <span class="switch-track"></span>
+        </label>
+      </div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-row-title">効果音</div>
+          <div class="settings-row-desc">正解・レベルアップ時のサウンド(現在はモック設定です)</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="soundToggle" />
+          <span class="switch-track"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="section-title" style="display:flex; align-items:center; justify-content:space-between;">
+      パスワード変更
+      <span class="settings-form-toggle" id="passwordFormToggle">変更する</span>
+    </div>
+    <div class="card" id="passwordCard" style="display:none;">
+      <form id="passwordForm">
+        <div class="form-field">
+          <label for="currentPassword">現在のパスワード</label>
+          <div class="input-wrap">
+            <span class="icon" id="keyIcon1"></span>
+            <input type="password" id="currentPassword" required autocomplete="current-password" />
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="newPassword">新しいパスワード</label>
+          <div class="input-wrap">
+            <span class="icon" id="keyIcon2"></span>
+            <input type="password" id="newPassword" required minlength="8" autocomplete="new-password" />
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="newPasswordConfirm">新しいパスワード(確認)</label>
+          <div class="input-wrap">
+            <span class="icon" id="keyIcon3"></span>
+            <input type="password" id="newPasswordConfirm" required autocomplete="new-password" />
+          </div>
+        </div>
+        <div class="form-error" id="passwordFormError"></div>
+        <button type="submit" class="btn btn-primary">パスワードを変更する</button>
+      </form>
+    </div>
+
+    <div style="margin-top: 26px;">
+      <button class="btn btn-outline" id="logoutBtn">ログアウト</button>
+    </div>
+  </main>
+
+  <nav class="bottom-nav" id="bottomNav"></nav>
+</div>
+
+<script src="js/icons.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/state.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/profile.js"></script>
+</body>
+</html>

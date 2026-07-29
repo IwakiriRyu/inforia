@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Inforia - 新規登録</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="auth-shell">
+  <div class="auth-logo">Inforia</div>
+  <div class="auth-tagline">情報Iを楽しく、続けられる学習体験を。</div>
+
+  <div class="auth-card">
+    <div class="auth-title">新規登録</div>
+
+    <form id="registerForm" novalidate>
+      <div class="form-field">
+        <label for="email">メールアドレス</label>
+        <div class="input-wrap">
+          <span class="icon" id="mailIcon"></span>
+          <input type="email" id="email" name="email" placeholder="example@inforia.jp" required autocomplete="email" />
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="password">パスワード</label>
+        <div class="input-wrap">
+          <span class="icon" id="keyIcon"></span>
+          <input type="password" id="password" name="password" placeholder="8文字以上" required minlength="8" autocomplete="new-password" />
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="passwordConfirm">パスワード(確認)</label>
+        <div class="input-wrap">
+          <span class="icon" id="keyIcon2"></span>
+          <input type="password" id="passwordConfirm" name="passwordConfirm" placeholder="もう一度入力" required autocomplete="new-password" />
+        </div>
+      </div>
+
+      <div class="form-error" id="formError"></div>
+
+      <button type="submit" class="btn btn-primary">登録する</button>
+    </form>
+
+    <div class="auth-switch">
+      すでにアカウントをお持ちの方は <a href="login.html">ログイン</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/icons.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  document.getElementById("mailIcon").innerHTML = ICONS.mail;
+  document.getElementById("keyIcon").innerHTML = ICONS.key;
+  document.getElementById("keyIcon2").innerHTML = ICONS.key;
+
+  if (currentUserEmail()) {
+    window.location.href = "index.html";
+  }
+
+  document.getElementById("registerForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const passwordConfirm = document.getElementById("passwordConfirm").value;
+    const errorEl = document.getElementById("formError");
+
+    if (password.length < 8) {
+      errorEl.textContent = "パスワードは8文字以上で入力してください。";
+      errorEl.classList.add("show");
+      return;
+    }
+    if (password !== passwordConfirm) {
+      errorEl.textContent = "パスワードが一致しません。";
+      errorEl.classList.add("show");
+      return;
+    }
+
+    const result = registerUser(email, password);
+    if (result.ok) {
+      window.location.href = "index.html";
+    } else {
+      errorEl.textContent = result.message;
+      errorEl.classList.add("show");
+    }
+  });
+</script>
+</body>
+</html>

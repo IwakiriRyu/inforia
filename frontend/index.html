@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Inforia - ダッシュボード</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="app-shell">
+
+  <header class="app-header">
+    <div class="logo">Inforia</div>
+  </header>
+
+  <div style="padding: 0 20px;">
+    <div class="profile-row">
+      <div class="avatar" id="avatarLevel">Lv.1</div>
+      <div class="profile-info">
+        <div class="level" id="levelLabel">レベル 1</div>
+        <div class="xp-bar-track">
+          <div class="xp-bar-fill" id="xpBarFill" style="width: 0%;"></div>
+        </div>
+        <div class="xp-label" id="xpLabel">0 / 100 XP</div>
+      </div>
+    </div>
+
+    <div class="streak-banner">
+      <span class="icon flame-icon" id="flameIcon"></span>
+      <span id="streakLabel">0日連続学習中</span>
+    </div>
+  </div>
+
+  <main class="app-main">
+    <div class="section-title">学習ジャンル</div>
+    <div id="unitList"></div>
+  </main>
+
+  <nav class="bottom-nav" id="bottomNav"></nav>
+</div>
+
+<script src="js/icons.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/glossary.js"></script>
+<script src="js/quiz-generator.js"></script>
+<script src="js/state.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

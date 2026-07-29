@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Inforia - クイズ</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="app-shell">
+
+  <div class="quiz-header">
+    <button class="icon-btn" style="background:#f1f3f9; color:#334155;" id="closeBtn" aria-label="閉じる"></button>
+    <div class="quiz-progress-track">
+      <div class="quiz-progress-fill" id="quizProgressFill" style="width:0%;"></div>
+    </div>
+    <div class="quiz-progress-text" id="quizProgressText">問題 1/10</div>
+    <div class="xp-pill"><span class="icon" id="xpPillIcon"></span> <span id="sessionXpLabel">0</span> XP</div>
+  </div>
+
+  <!-- ── クイズ画面 ── -->
+  <main class="app-main" id="quizView">
+    <div class="section-title" id="unitTitle">ジャンル</div>
+    <div class="question-type-badge" id="questionTypeBadge" style="display:none;"></div>
+    <div class="question-text" id="questionText"></div>
+    <pre class="code-block" id="codeBlock" style="display:none;"></pre>
+
+    <div class="choice-list" id="choiceList"></div>
+
+    <div class="hint-box" id="hintBox"></div>
+
+    <div class="quiz-actions">
+      <button class="btn btn-outline" id="hintBtn" style="flex:0 0 110px;">ヒント</button>
+      <button class="btn btn-primary" id="submitBtn" disabled>回答する</button>
+    </div>
+  </main>
+
+  <!-- ── 結果・解説画面 ── -->
+  <main class="app-main" id="resultView" style="display:none;">
+    <div class="result-hero">
+      <div class="result-icon" id="resultIcon"></div>
+      <div class="result-title" id="resultTitle"></div>
+      <div class="result-xp" id="resultXp"></div>
+    </div>
+
+    <div class="ai-image-box">
+      <div class="ai-image-label"><span class="icon" id="sparkleIcon"></span> <span id="aiImageLabelText">解説イメージ</span></div>
+      <div class="ai-image-placeholder" id="aiImagePlaceholder"></div>
+    </div>
+    <div class="note-inline" id="aiImageNote"></div>
+
+    <div class="section-title">解説</div>
+    <div class="explanation-box" id="explanationBox"></div>
+
+    <div class="quiz-actions">
+      <button class="btn btn-primary" id="nextBtn">次の問題へ</button>
+    </div>
+  </main>
+
+  <div class="badge-toast" id="badgeToast">
+    <div class="badge-toast-icon icon" id="badgeToastIcon"></div>
+    <div>
+      <div class="badge-toast-name" id="badgeToastName"></div>
+      <div class="badge-toast-sub">新しいバッジを獲得しました</div>
+    </div>
+  </div>
+</div>
+
+<script src="js/icons.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/glossary.js"></script>
+<script src="js/diagrams.js"></script>
+<script src="js/question-bank.js"></script>
+<script src="js/quiz-generator.js"></script>
+<script src="js/state.js"></script>
+<script src="js/quiz.js"></script>
+</body>
+</html>
