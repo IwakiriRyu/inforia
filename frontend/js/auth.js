@@ -110,3 +110,28 @@ function changePassword(email, currentPassword, newPassword) {
   saveUsers(users);
   return { ok: true };
 }
+
+/** ユーザー名・メールアドレスの変更(本人確認のため現在のパスワードが必要) */
+function updateAccount(currentEmail, username, newEmail, password) {
+  const users = loadUsers();
+  const user = users.find((u) => u.email === currentEmail);
+  if (!user || user.password !== password) {
+    return { ok: false, message: "現在のパスワードが正しくありません。" };
+  }
+  const nameError = validateUsername(username);
+  if (nameError) {
+    return { ok: false, message: nameError };
+  }
+  const others = users.filter((u) => u !== user);
+  if (others.some((u) => displayNameOf(u).toLowerCase() === username.toLowerCase())) {
+    return { ok: false, message: "このユーザー名はすでに使われています。" };
+  }
+  if (others.some((u) => u.email === newEmail)) {
+    return { ok: false, message: "このメールアドレスはすでに登録されています。" };
+  }
+  user.username = username;
+  user.email = newEmail;
+  saveUsers(users);
+  setSession(newEmail);
+  return { ok: true };
+}

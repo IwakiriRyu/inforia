@@ -58,6 +58,35 @@
     </div>
   </main>
 
+  <!-- ── セッション終了画面 ── -->
+  <main class="app-main" id="summaryView" style="display:none;">
+    <div class="summary-hero">
+      <div class="summary-kind" id="summaryKind"></div>
+      <div class="summary-ring" id="summaryRing"></div>
+      <div class="summary-rate" id="summaryRate"></div>
+    </div>
+
+    <div class="summary-dots" id="summaryDots"></div>
+
+    <div class="summary-stats">
+      <div class="summary-stat">
+        <div class="summary-stat-label">正解数</div>
+        <div class="summary-stat-value" id="summaryCorrect"></div>
+      </div>
+      <div class="summary-stat">
+        <div class="summary-stat-label">獲得XP</div>
+        <div class="summary-stat-value xp"><span class="icon" id="summaryXpIcon"></span><span id="summaryXp"></span></div>
+      </div>
+    </div>
+
+    <div class="summary-card" id="summaryBadges" style="display:none;"></div>
+    <div class="summary-card" id="summaryReview" style="display:none;"></div>
+
+    <div class="quiz-actions">
+      <button class="btn btn-primary" id="summaryHomeBtn">ホームに戻る</button>
+    </div>
+  </main>
+
   <div class="badge-toast" id="badgeToast">
     <div class="badge-toast-icon icon" id="badgeToastIcon"></div>
     <div>

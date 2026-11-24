@@ -23,6 +23,7 @@ requireAuth();
   let selectedChoice = null;
   let sessionXp = 0;
   let sessionCorrect = 0;
+  const sessionResults = [];
 
   const HINTS_BY_GENRE = {
     society: "法律や権利は「誰を・何から守るためのものか」を考えてみよう。",
@@ -172,6 +173,7 @@ requireAuth();
 
     const rec = recordAnswer(state, q.genreId || genre.id, q.id, isCorrect, q.type);
     const newlyUnlocked = rec.newlyUnlocked;
+    sessionResults.push(isCorrect);
     if (isCorrect) {
       sessionXp += rec.xpAward;
       sessionCorrect += 1;
@@ -292,18 +294,85 @@ requireAuth();
   }
 
   function finishSession() {
-    const newlyUnlocked = recordSessionComplete(state, sessionCorrect, questions.length);
-    const badgeNote =
-      newlyUnlocked.length > 0
-        ? `\n新しいバッジ: ${newlyUnlocked
-            .map((id) => BADGES.find((b) => b.id === id)?.name)
-            .join("、")}`
-        : "";
+    const total = questions.length;
+    const newlyUnlocked = recordSessionComplete(state, sessionCorrect, total);
     const nextDate = nextReviewDate(state);
-    const reviewNote = nextDate ? `\n次の復習: ${shortDate(nextDate)}` : "";
-    alert(
-      `${isReview ? "復習" : "セッション"}終了!\n正解数: ${sessionCorrect}/${questions.length}\n獲得XP: ${sessionXp}${badgeNote}${reviewNote}`
+    const rate = total ? Math.round((sessionCorrect / total) * 100) : 0;
+
+    // 円グラフ(正解数 / 問題数)
+    const r = 54;
+    const circumference = 2 * Math.PI * r;
+    const offset = circumference * (1 - (total ? sessionCorrect / total : 0));
+    document.getElementById("summaryKind").textContent = `${isReview ? "復習" : "セッション"}終了!`;
+    document.getElementById("summaryRing").innerHTML = `
+      <svg viewBox="0 0 140 140" aria-hidden="true">
+        <defs>
+          <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#60a5fa" />
+            <stop offset="100%" stop-color="#2dd4bf" />
+          </linearGradient>
+        </defs>
+        <circle cx="70" cy="70" r="${r}" class="ring-track" />
+        <circle cx="70" cy="70" r="${r}" class="ring-fill" id="ringFill"
+          stroke-dasharray="${circumference}" stroke-dashoffset="${circumference}" />
+      </svg>
+      <div class="summary-ring-text">
+        <span class="summary-ring-num">${sessionCorrect}</span><span class="summary-ring-total">/${total}</span>
+      </div>`;
+    document.getElementById("summaryRate").textContent = `正解率 ${rate}%`;
+
+    // 問題ごとの正解・不正解
+    document.getElementById("summaryDots").innerHTML = sessionResults
+      .map(
+        (ok, i) =>
+          `<span class="summary-dot ${ok ? "ok" : "ng"}" title="問題 ${i + 1}">${
+            ok ? ICONS.check : ICONS.cross
+          }</span>`
+      )
+      .join("");
+
+    document.getElementById("summaryCorrect").textContent = `${sessionCorrect}/${total}`;
+    document.getElementById("summaryXpIcon").innerHTML = ICONS.star;
+    document.getElementById("summaryXp").textContent = sessionXp;
+
+    const badgesEl = document.getElementById("summaryBadges");
+    if (newlyUnlocked.length > 0) {
+      badgesEl.innerHTML =
+        `<div class="summary-card-label">新しいバッジ</div>` +
+        newlyUnlocked
+          .map((id) => {
+            const b = BADGES.find((x) => x.id === id);
+            return b
+              ? `<div class="summary-badge"><span class="icon">${ICONS[b.icon] || ICONS.medal}</span>${b.name}</div>`
+              : "";
+          })
+          .join("");
+      badgesEl.style.display = "block";
+    }
+
+    const reviewEl = document.getElementById("summaryReview");
+    if (nextDate) {
+      reviewEl.innerHTML = `<div class="summary-card-label">次の復習</div><div class="summary-review-date">${shortDate(
+        nextDate
+      )}</div>`;
+      reviewEl.style.display = "block";
+    }
+
+    el.resultView.style.display = "none";
+    el.quizView.style.display = "none";
+    document.getElementById("summaryView").style.display = "block";
+    el.progressFill.style.width = "100%";
+    window.scrollTo(0, 0);
+
+    // 円グラフを動かす
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        document.getElementById("ringFill").style.strokeDashoffset = offset;
+      })
     );
-    window.location.href = "index.html";
+
+    document.getElementById("summaryHomeBtn").addEventListener("click", () => {
+      window.location.href = "index.html";
+    });
   }
 })();

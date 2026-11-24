@@ -85,6 +85,38 @@
     </div>
 
     <div class="section-title" style="display:flex; align-items:center; justify-content:space-between;">
+      アカウント情報
+      <span class="settings-form-toggle" id="accountFormToggle">変更する</span>
+    </div>
+    <div class="card" id="accountCard" style="display:none;">
+      <form id="accountForm" novalidate>
+        <div class="form-field">
+          <label for="accountUsername">ユーザー名</label>
+          <div class="input-wrap">
+            <span class="icon" id="userIconAcc"></span>
+            <input type="text" id="accountUsername" required minlength="2" maxlength="20" autocomplete="username" />
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="accountEmail">メールアドレス</label>
+          <div class="input-wrap">
+            <span class="icon" id="mailIconAcc"></span>
+            <input type="email" id="accountEmail" required autocomplete="email" />
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="accountPassword">現在のパスワード</label>
+          <div class="input-wrap">
+            <span class="icon" id="keyIconAcc"></span>
+            <input type="password" id="accountPassword" required autocomplete="current-password" />
+          </div>
+        </div>
+        <div class="form-error" id="accountFormError"></div>
+        <button type="submit" class="btn btn-primary">変更を保存する</button>
+      </form>
+    </div>
+
+    <div class="section-title" style="display:flex; align-items:center; justify-content:space-between;">
       パスワード変更
       <span class="settings-form-toggle" id="passwordFormToggle">変更する</span>
     </div>

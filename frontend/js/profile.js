@@ -63,6 +63,45 @@ requireAuth();
     location.reload();
   });
 
+  // アカウント情報(ユーザー名・メールアドレス)変更フォーム
+  const accountCard = document.getElementById("accountCard");
+  const accountFormToggle = document.getElementById("accountFormToggle");
+  document.getElementById("userIconAcc").innerHTML = ICONS.user;
+  document.getElementById("mailIconAcc").innerHTML = ICONS.mail;
+  document.getElementById("keyIconAcc").innerHTML = ICONS.key;
+  document.getElementById("accountUsername").value = currentUserName();
+  document.getElementById("accountEmail").value = email || "";
+
+  accountFormToggle.addEventListener("click", () => {
+    const isHidden = accountCard.style.display === "none";
+    accountCard.style.display = isHidden ? "block" : "none";
+    accountFormToggle.textContent = isHidden ? "閉じる" : "変更する";
+  });
+
+  document.getElementById("accountForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const username = document.getElementById("accountUsername").value.trim();
+    const newEmail = document.getElementById("accountEmail").value.trim();
+    const password = document.getElementById("accountPassword").value;
+    const errorEl = document.getElementById("accountFormError");
+    errorEl.classList.remove("show");
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+      errorEl.textContent = "メールアドレスの形式が正しくありません。";
+      errorEl.classList.add("show");
+      return;
+    }
+
+    const result = updateAccount(email, username, newEmail, password);
+    if (result.ok) {
+      alert("アカウント情報を変更しました。");
+      location.reload();
+    } else {
+      errorEl.textContent = result.message;
+      errorEl.classList.add("show");
+    }
+  });
+
   // パスワード変更フォームの開閉
   const passwordCard = document.getElementById("passwordCard");
   const passwordFormToggle = document.getElementById("passwordFormToggle");
