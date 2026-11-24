@@ -2220,3 +2220,79 @@ body {
     animation: none;
   }
 }
+
+/* ── クイズ画面: 短いフェードイン + ジャンル紹介 ── */
+body.quiz-body .app-shell {
+  animation: fx-fade-in 0.25s ease both;
+}
+
+@keyframes fx-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.quiz-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 9990;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #fff;
+  padding: 0 28px;
+  cursor: pointer;
+  background: linear-gradient(160deg, var(--navy-900), var(--blue-500));
+}
+
+.quiz-intro.show {
+  display: flex;
+  animation: fx-fade-in 0.25s ease both;
+}
+
+.quiz-intro.hide {
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.quiz-intro-inner > * {
+  animation: fx-rise-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.quiz-intro-kind {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  opacity: 0.8;
+}
+
+.quiz-intro-title {
+  margin: 10px 0 14px;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.4;
+  animation-delay: 0.08s;
+}
+
+.quiz-intro-count {
+  display: inline-block;
+  padding: 6px 18px;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  animation-delay: 0.16s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.quiz-body .app-shell,
+  .quiz-intro.show,
+  .quiz-intro-inner > * {
+    animation: none;
+  }
+}

@@ -73,6 +73,29 @@ requireAuth();
   document.getElementById("sparkleIcon").innerHTML = ICONS.sparkle;
 
   renderQuestion();
+  showIntro();
+
+  /** 開始前のジャンル紹介(約1.2秒。タップで閉じる。?intro=off で出さない) */
+  function showIntro() {
+    const intro = document.getElementById("quizIntro");
+    if (params.get("intro") === "off") {
+      intro.remove();
+      return;
+    }
+    document.getElementById("quizIntroKind").textContent = isReview ? "今日の復習" : "学習ジャンル";
+    document.getElementById("quizIntroTitle").textContent = isReview ? "復習をはじめます" : genre.title;
+    document.getElementById("quizIntroCount").textContent = `全${questions.length}問`;
+    intro.classList.add("show");
+    let closed = false;
+    const close = () => {
+      if (closed) return;
+      closed = true;
+      intro.classList.add("hide");
+      setTimeout(() => intro.remove(), 400);
+    };
+    intro.addEventListener("click", close);
+    setTimeout(close, Fx.reduce ? 600 : 1300);
+  }
 
   el.closeBtn.addEventListener("click", () => {
     window.location.href = "home.html";
