@@ -62,13 +62,13 @@
     window.location.href = "home.html";
   }
 
-  document.getElementById("loginForm").addEventListener("submit", (e) => {
+  document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
     const errorEl = document.getElementById("formError");
 
-    const result = loginUser(email, password);
+    const result = await loginUser(email, password);
     if (result.ok) {
       diveTo("home.html");
     } else {

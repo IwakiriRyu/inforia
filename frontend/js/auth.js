@@ -1,68 +1,44 @@
-/* Inforia — 仮認証(フロントエンド単体モック)
- * 本番ではFlaskバックエンド+Neonでのユーザー認証に置き換える想定。
- * ここではlocalStorageにユーザー一覧とセッションを保存するだけの簡易実装。
+/* Inforia — 認証(サーバー連携)
+ * ユーザー情報とパスワードは、バックエンド(Flask + Neon)に保存する。
+ * ログイン状態はサーバーが発行するCookieで保つ(同じ端末では、しばらく自動でログインしたままになる)。
+ * 画面の表示を速くするため、ログイン中のユーザー名などは localStorage に控えを置く。
+ * 控えは表示用で、本当にログインしているかは /api/me で確かめる。
  */
 
-const USERS_KEY = "inforia_users_v1";
 const SESSION_KEY = "inforia_session_v1";
 
-function loadUsers() {
+function readCache() {
   try {
-    return JSON.parse(localStorage.getItem(USERS_KEY)) || [];
-  } catch (e) {
-    return [];
-  }
-}
-
-function saveUsers(users) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
-}
-
-function currentUserEmail() {
-  try {
-    const session = JSON.parse(localStorage.getItem(SESSION_KEY));
-    return session?.email || null;
+    return JSON.parse(localStorage.getItem(SESSION_KEY)) || null;
   } catch (e) {
     return null;
   }
 }
 
-function setSession(email) {
-  localStorage.setItem(SESSION_KEY, JSON.stringify({ email }));
+function writeCache(user) {
+  localStorage.setItem(
+    SESSION_KEY,
+    JSON.stringify({ email: user.email, username: user.username, createdAt: user.createdAt })
+  );
 }
 
-function logout() {
+function clearCache() {
   localStorage.removeItem(SESSION_KEY);
-  window.location.href = "login.html";
 }
 
-/** ログイン・新規登録が必要なページの先頭で呼ぶガード */
-function requireAuth() {
-  if (!currentUserEmail()) {
-    window.location.href = "login.html";
-  }
-}
-
-function authTodayStr() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-    d.getDate()
-  ).padStart(2, "0")}`;
-}
-
-/** 表示用ユーザー名。ユーザー名未設定の旧アカウントはメールアドレスの@前を使う */
-function displayNameOf(user) {
-  if (!user) return "";
-  return user.username || (user.email ? user.email.split("@")[0] : "");
-}
-
-function currentUser() {
-  const email = currentUserEmail();
-  return loadUsers().find((u) => u.email === email) || null;
+function currentUserEmail() {
+  return readCache()?.email || null;
 }
 
 function currentUserName() {
-  return displayNameOf(currentUser());
+  const c = readCache();
+  if (!c) return "";
+  return c.username || (c.email ? c.email.split("@")[0] : "");
+}
+
+/** 登録日(マイページ用) */
+function currentUserCreatedAt() {
+  return readCache()?.createdAt || null;
 }
 
 function validateUsername(username) {
@@ -72,66 +48,65 @@ function validateUsername(username) {
   return null;
 }
 
-function registerUser(username, email, password) {
-  const users = loadUsers();
-  const nameError = validateUsername(username);
-  if (nameError) {
-    return { ok: false, message: nameError };
+/** APIを呼ぶ。通信できないときも、{ ok:false, message } の形で返す */
+async function api(method, path, body) {
+  try {
+    const res = await fetch(path, {
+      method,
+      headers: body ? { "Content-Type": "application/json" } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
+      credentials: "same-origin",
+    });
+    const data = await res.json().catch(() => null);
+    if (!data) return { ok: false, status: res.status, message: "サーバーに接続できませんでした。" };
+    return { status: res.status, ...data };
+  } catch (e) {
+    return { ok: false, status: 0, message: "サーバーに接続できませんでした。通信状況を確認してください。" };
   }
-  if (users.some((u) => displayNameOf(u).toLowerCase() === username.toLowerCase())) {
-    return { ok: false, message: "このユーザー名はすでに使われています。" };
-  }
-  if (users.some((u) => u.email === email)) {
-    return { ok: false, message: "このメールアドレスはすでに登録されています。" };
-  }
-  users.push({ username, email, password, registeredAt: authTodayStr() });
-  saveUsers(users);
-  setSession(email);
-  return { ok: true };
 }
 
-function loginUser(email, password) {
-  const users = loadUsers();
-  const user = users.find((u) => u.email === email && u.password === password);
-  if (!user) {
-    return { ok: false, message: "メールアドレスまたはパスワードが正しくありません。" };
-  }
-  setSession(email);
-  return { ok: true };
+async function registerUser(username, email, password) {
+  const r = await api("POST", "/api/register", { username, email, password });
+  if (r.ok) writeCache(r.user);
+  return r;
 }
 
-function changePassword(email, currentPassword, newPassword) {
-  const users = loadUsers();
-  const user = users.find((u) => u.email === email);
-  if (!user || user.password !== currentPassword) {
-    return { ok: false, message: "現在のパスワードが正しくありません。" };
-  }
-  user.password = newPassword;
-  saveUsers(users);
-  return { ok: true };
+async function loginUser(email, password) {
+  const r = await api("POST", "/api/login", { email, password });
+  if (r.ok) writeCache(r.user);
+  return r;
+}
+
+async function logout() {
+  await api("POST", "/api/logout");
+  clearCache();
+  window.location.href = "login.html";
+}
+
+async function changePassword(currentPassword, newPassword) {
+  return api("POST", "/api/me/password", { currentPassword, newPassword });
 }
 
 /** ユーザー名・メールアドレスの変更(本人確認のため現在のパスワードが必要) */
-function updateAccount(currentEmail, username, newEmail, password) {
-  const users = loadUsers();
-  const user = users.find((u) => u.email === currentEmail);
-  if (!user || user.password !== password) {
-    return { ok: false, message: "現在のパスワードが正しくありません。" };
+async function updateAccount(username, email, password) {
+  const r = await api("PATCH", "/api/me", { username, email, password });
+  if (r.ok) writeCache(r.user);
+  return r;
+}
+
+/** ログインが必要なページの先頭で呼ぶ。控えがなければログイン画面へ。控えがあっても、サーバーで確かめる */
+function requireAuth() {
+  if (!currentUserEmail()) {
+    window.location.href = "login.html";
+    return;
   }
-  const nameError = validateUsername(username);
-  if (nameError) {
-    return { ok: false, message: nameError };
-  }
-  const others = users.filter((u) => u !== user);
-  if (others.some((u) => displayNameOf(u).toLowerCase() === username.toLowerCase())) {
-    return { ok: false, message: "このユーザー名はすでに使われています。" };
-  }
-  if (others.some((u) => u.email === newEmail)) {
-    return { ok: false, message: "このメールアドレスはすでに登録されています。" };
-  }
-  user.username = username;
-  user.email = newEmail;
-  saveUsers(users);
-  setSession(newEmail);
-  return { ok: true };
+  api("GET", "/api/me").then((r) => {
+    if (r.status === 401) {
+      // サーバー側でログインが切れている(別の端末でログアウトした、など)
+      clearCache();
+      window.location.href = "login.html";
+    } else if (r.ok) {
+      writeCache(r.user); // 他の端末での変更を反映
+    }
+  });
 }

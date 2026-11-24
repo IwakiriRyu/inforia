@@ -17,9 +17,7 @@ requireAuth();
   document.getElementById("infoStreak").textContent = `${state.streak}日`;
   document.getElementById("infoBadges").textContent = `${state.badges.length} / ${BADGES.length}`;
 
-  const users = loadUsers();
-  const me = users.find((u) => u.email === email);
-  document.getElementById("infoRegistered").textContent = me?.registeredAt || "-";
+  document.getElementById("infoRegistered").textContent = currentUserCreatedAt() || "-";
 
   // 設定トグル
   const settings = loadSettings();
@@ -78,7 +76,7 @@ requireAuth();
     accountFormToggle.textContent = isHidden ? "閉じる" : "変更する";
   });
 
-  document.getElementById("accountForm").addEventListener("submit", (e) => {
+  document.getElementById("accountForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const username = document.getElementById("accountUsername").value.trim();
     const newEmail = document.getElementById("accountEmail").value.trim();
@@ -92,7 +90,7 @@ requireAuth();
       return;
     }
 
-    const result = updateAccount(email, username, newEmail, password);
+    const result = await updateAccount(username, newEmail, password);
     if (result.ok) {
       alert("アカウント情報を変更しました。");
       location.reload();
@@ -115,7 +113,7 @@ requireAuth();
   document.getElementById("keyIcon2").innerHTML = ICONS.key;
   document.getElementById("keyIcon3").innerHTML = ICONS.key;
 
-  document.getElementById("passwordForm").addEventListener("submit", (e) => {
+  document.getElementById("passwordForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const current = document.getElementById("currentPassword").value;
     const next = document.getElementById("newPassword").value;
@@ -134,7 +132,7 @@ requireAuth();
       return;
     }
 
-    const result = changePassword(email, current, next);
+    const result = await changePassword(current, next);
     if (result.ok) {
       alert("パスワードを変更しました。");
       document.getElementById("passwordForm").reset();
