@@ -8,11 +8,17 @@ requireAuth();
 
 (function () {
   const params = new URLSearchParams(window.location.search);
-  const genreId = params.get("genre") || GENRES[0].id;
-  const genre = GENRES.find((g) => g.id === genreId) || GENRES[0];
-  const questions = getSessionQuestions(genreId, QUESTIONS_PER_SESSION);
-
   let state = loadState();
+  const isReview = params.get("mode") === "review";
+  // ?figure=off で説明図を出さない(図あり/図なしの比較条件を試すためのスイッチ)
+  const showFigure = params.get("figure") !== "off";
+  const genreId = params.get("genre") || GENRES[0].id;
+  let genre = GENRES.find((g) => g.id === genreId) || GENRES[0];
+  const questions = isReview ? getReviewQuestions(state) : getSessionQuestions(genreId, QUESTIONS_PER_SESSION);
+  if (questions.length === 0) {
+    window.location.href = "index.html";
+    return;
+  }
   let index = 0;
   let selectedChoice = null;
   let sessionXp = 0;
@@ -50,7 +56,8 @@ requireAuth();
     aiImagePlaceholder: document.getElementById("aiImagePlaceholder"),
     aiImageLabelText: document.getElementById("aiImageLabelText"),
     aiImageNote: document.getElementById("aiImageNote"),
-    explanationBox: document.getElementById("explanationBox"),
+    explainList: document.getElementById("explainList"),
+    reviewNote: document.getElementById("reviewNote"),
     nextBtn: document.getElementById("nextBtn"),
     closeBtn: document.getElementById("closeBtn"),
     badgeToast: document.getElementById("badgeToast"),
@@ -95,7 +102,8 @@ requireAuth();
     const q = questions[index];
     selectedChoice = null;
 
-    el.unitTitle.textContent = genre.title;
+    genre = GENRES.find((g) => g.id === q.genreId) || genre;
+    el.unitTitle.textContent = isReview ? `今日の復習 / ${genre.title}` : genre.title;
 
     if (TYPE_LABELS[q.type]) {
       el.typeBadge.textContent = TYPE_LABELS[q.type];
@@ -156,33 +164,37 @@ requireAuth();
   function showResult() {
     const q = questions[index];
     const isCorrect = selectedChoice === q.answer;
-    const xpAward = XP_BY_TYPE[q.type] ?? XP_BY_TYPE.basic;
 
     [...el.choiceList.children].forEach((item, i) => {
       if (i === q.answer) item.classList.add("correct");
       else if (i === selectedChoice) item.classList.add("incorrect");
     });
 
+    const rec = recordAnswer(state, q.genreId || genre.id, q.id, isCorrect, q.type);
+    const newlyUnlocked = rec.newlyUnlocked;
     if (isCorrect) {
-      sessionXp += xpAward;
+      sessionXp += rec.xpAward;
       sessionCorrect += 1;
     }
-    const newlyUnlocked = recordAnswer(state, genre.id, q.id, isCorrect, q.type);
 
     el.resultIcon.className = `result-icon ${isCorrect ? "correct" : "incorrect"}`;
     el.resultIcon.innerHTML = `<span class="icon">${isCorrect ? ICONS.check : ICONS.cross}</span>`;
     el.resultTitle.className = `result-title ${isCorrect ? "correct" : "incorrect"}`;
     el.resultTitle.textContent = isCorrect ? "正解!" : "不正解...";
-    el.resultXp.textContent = isCorrect ? `+${xpAward} XP獲得!` : "もう一度挑戦してみよう";
+    el.resultXp.textContent = isCorrect
+      ? `+${rec.xpAward} XP獲得!${rec.xpAward < (XP_BY_TYPE[q.type] ?? 10) ? "(習得済みの問題は半分)" : ""}`
+      : "もう一度挑戦してみよう";
 
-    renderExplanationImage(q);
-    el.explanationBox.textContent = q.explanation;
+    renderFigure(q);
+    renderExplanation(q, isCorrect);
+    el.reviewNote.innerHTML = `<span class="review-note-label">復習</span>${rec.review.text}`;
 
     el.nextBtn.textContent = index + 1 >= questions.length ? "結果を見る" : "次の問題へ";
 
     el.sessionXpLabel.textContent = sessionXp;
     el.quizView.style.display = "none";
     el.resultView.style.display = "block";
+    window.scrollTo(0, 0);
     el.progressFill.style.width = `${((index + 1) / questions.length) * 100}%`;
 
     if (newlyUnlocked.length > 0) {
@@ -190,22 +202,76 @@ requireAuth();
     }
   }
 
-  function renderExplanationImage(q) {
+  /** 3点の解説: 正解の理由 / よくある間違い / 次の一歩 */
+  function renderExplanation(q, isCorrect) {
+    const correctText = q.choices[q.answer];
+    let reason;
+    let mistake;
+    let next;
+
+    if (q.type === "basic") {
+      reason = q.explanation;
+      if (!isCorrect && q.choiceNotes) {
+        mistake = `選んだ答えについて: ${q.choiceNotes[selectedChoice]}`;
+      } else {
+        const wrongIdx = q.choices.findIndex((_, i) => i !== q.answer);
+        mistake = `取り違えやすい例: ${q.choiceNotes ? q.choiceNotes[wrongIdx] : "似た用語との混同に注意。"}`;
+      }
+      next = `「${q.term}」と「${q.distractorTerm}」の違いを、自分の言葉で言ってみよう。`;
+    } else {
+      reason = q.explanation;
+      mistake = q.pitfall || "選択肢を1つずつ確かめて、なぜ違うのかを考えよう。";
+      next =
+        q.type === "coding"
+          ? "変数の値を1行ずつ紙に書き出して、答えを確かめてみよう。"
+          : "ほかの選択肢が、なぜ適切でないのかを説明してみよう。";
+    }
+
+    const items = [
+      ["正解の理由", reason, "accent"],
+      ["よくある間違い", mistake, "warn"],
+      ["次の一歩", next, "accent"],
+    ];
+    el.explainList.innerHTML = items
+      .map(
+        (it, i) => `
+        <div class="explain-item ${it[2]}">
+          <div class="explain-num">${i + 1}</div>
+          <div>
+            <div class="explain-head">${it[0]}</div>
+            <div class="explain-body">${escapeHtml(it[1])}</div>
+          </div>
+        </div>`
+      )
+      .join("");
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  /** 説明図: 構造・手順・関係を示せる問題だけに表示する(飾りの絵は出さない) */
+  function renderFigure(q) {
+    const box = document.getElementById("figureBox");
+    if (!showFigure) {
+      box.style.display = "none";
+      el.aiImageNote.textContent = "説明図は表示しない設定です(?figure=off)。";
+      return;
+    }
     if (q.image) {
+      box.style.display = "block";
       el.aiImagePlaceholder.classList.add("ai-image-real");
       el.aiImagePlaceholder.innerHTML = q.image.svg;
       el.aiImagePlaceholder.appendChild(captionEl(q.image.caption));
-      el.aiImageLabelText.textContent = "解説イメージ(サンプル図解)";
+      el.aiImageLabelText.textContent = "説明図";
       el.aiImageNote.textContent =
-        "※ 本実装ではLLM APIが問題ごとにこのような解説画像を自動生成する予定です(このサンプルは手作成の図解です)";
+        "※ 試作では、手で作った図の仕様をテンプレートで描画しています。本実装では、AIが図の仕様を出し、人が確認してから描画します";
     } else {
-      el.aiImagePlaceholder.classList.remove("ai-image-real");
-      el.aiImagePlaceholder.innerHTML = `
-        <div class="icon" style="font-size:34px; color:#94a3b8;">${ICONS.image}</div>
-        <div>生成予定: 「${q.explanation.split("。")[0]}」のイメージ図</div>
-      `;
-      el.aiImageLabelText.textContent = "解説イメージ";
-      el.aiImageNote.textContent = "※ バックエンド接続後、LLM APIが問題ごとに解説画像を自動生成します";
+      box.style.display = "none";
+      el.aiImageNote.textContent = "この問題には説明図がありません(構造・手順・関係を示せる問題にだけ付けます)";
     }
   }
 
@@ -233,8 +299,10 @@ requireAuth();
             .map((id) => BADGES.find((b) => b.id === id)?.name)
             .join("、")}`
         : "";
+    const nextDate = nextReviewDate(state);
+    const reviewNote = nextDate ? `\n次の復習: ${shortDate(nextDate)}` : "";
     alert(
-      `セッション終了!\n正解数: ${sessionCorrect}/${questions.length}\n獲得XP: ${sessionXp}${badgeNote}`
+      `${isReview ? "復習" : "セッション"}終了!\n正解数: ${sessionCorrect}/${questions.length}\n獲得XP: ${sessionXp}${badgeNote}${reviewNote}`
     );
     window.location.href = "index.html";
   }

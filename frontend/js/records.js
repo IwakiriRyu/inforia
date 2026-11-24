@@ -2,6 +2,8 @@
 
 requireAuth();
 
+const MIN_ANSWERS_FOR_TAG = 5;
+
 (function () {
   const state = loadState();
   renderBottomNav("records");
@@ -66,11 +68,14 @@ requireAuth();
       const cls = hasData ? accuracyClass(pct) : "none";
 
       let tag = "";
-      if (hasData && pct >= 70) tag = `<span class="genre-tag strong">得意</span>`;
-      else if (hasData && pct < 40) tag = `<span class="genre-tag weak">苦手</span>`;
+      // 回答が少ないうちは判定しない(偶然に左右されるため)
+      const enough = (state.genreStats[genre.id]?.answered || 0) >= MIN_ANSWERS_FOR_TAG;
+      if (hasData && !enough) tag = `<span class="genre-tag">判定には${MIN_ANSWERS_FOR_TAG}問以上</span>`;
+      else if (enough && pct >= 70) tag = `<span class="genre-tag strong">得意</span>`;
+      else if (enough && pct < 40) tag = `<span class="genre-tag weak">苦手</span>`;
 
-      const total = GLOSSARY[genre.id]?.length || 0;
-      const done = state.unitProgress[genre.id]?.correctIds.length || 0;
+      const total = genreQuestionTotal(genre.id);
+      const done = masteredCount(state, genre.id);
       const masteryPercent = unitProgressPercent(state, genre.id);
 
       const el = document.createElement("div");

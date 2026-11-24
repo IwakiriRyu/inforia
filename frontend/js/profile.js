@@ -36,6 +36,32 @@ requireAuth();
     saveSettings(settings);
   });
 
+  // デモ用の操作
+  const demoDate = document.getElementById("demoDate");
+  const renderDemoDate = () => {
+    const off = devOffsetDays();
+    demoDate.textContent = `${todayStr()}${off ? `(今日から+${off}日)` : "(今日)"}`;
+  };
+  renderDemoDate();
+  document.getElementById("demoSeedBtn").addEventListener("click", () => {
+    if (!confirm("現在の学習記録を、デモ用の例に置き換えます。よろしいですか?")) return;
+    saveState(seedDemoState());
+    location.reload();
+  });
+  document.getElementById("demoNextDayBtn").addEventListener("click", () => {
+    setDevOffsetDays(devOffsetDays() + 1);
+    location.reload();
+  });
+  document.getElementById("demoResetDayBtn").addEventListener("click", () => {
+    setDevOffsetDays(0);
+    location.reload();
+  });
+  document.getElementById("demoClearBtn").addEventListener("click", () => {
+    if (!confirm("学習記録(XP・復習・バッジなど)をすべて消します。よろしいですか?")) return;
+    saveState(defaultState());
+    location.reload();
+  });
+
   // パスワード変更フォームの開閉
   const passwordCard = document.getElementById("passwordCard");
   const passwordFormToggle = document.getElementById("passwordFormToggle");

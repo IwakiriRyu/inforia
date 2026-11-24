@@ -16,9 +16,10 @@ const DIAGRAM_COLORS = {
 
 /** 変数の状態変化を箱と矢印で示す図(コーディング問題向け) */
 function svgVariableTrace(steps) {
-  const boxW = 108;
+  const many = steps.length >= 5;
+  const boxW = many ? 84 : steps.length === 4 ? 96 : 108;
   const boxH = 64;
-  const gap = 40;
+  const gap = many ? 28 : 40;
   const width = steps.length * boxW + (steps.length - 1) * gap + 20;
   const height = 110;
 

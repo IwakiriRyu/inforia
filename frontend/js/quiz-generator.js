@@ -1,10 +1,12 @@
 /* Inforia — 出題ロジック
  * 1セッション(10問)は、単語帳(GLOSSARY)から自動生成する基本問題に加えて、
  * コーディング問題・共通テスト対策の応用問題(question-bank.js)を混ぜて出題する。
+ * 復習セッションは、期限が来た問題(state.js の review)を再出題する。
  */
 
 const QUESTIONS_PER_SESSION = 10;
 const SPECIAL_QUESTIONS_PER_SESSION = 3; // コーディング/応用問題の目安出題数
+const DIAGRAM_BASIC_PER_SESSION = 2; // 説明図のある基本問題の目安出題数
 
 function shuffle(array) {
   const result = [...array];
@@ -23,26 +25,30 @@ function pickDistractors(pool, excludeIndex, count) {
 /**
  * 単語帳の1エントリから基本問題を1問作る。
  * direction: "term" = 定義文を見て用語を選ぶ / "definition" = 用語を見て定義文を選ぶ
+ * choiceNotes: 各選択肢が何を表すか(「よくある間違い」の解説に使う)
  */
 function buildBasicQuestion(genreId, termIndex, direction) {
   const pool = GLOSSARY[genreId];
   const [term, definition] = pool[termIndex];
   const distractorIndexes = pickDistractors(pool, termIndex, 3);
+  const idxs = [termIndex, ...distractorIndexes];
 
-  let question, choiceTexts, correctText;
+  let question, choiceTexts, choiceNotesRaw;
   if (direction === "term") {
     question = `次の説明に当てはまる用語を選びなさい。\n「${definition}」`;
-    correctText = term;
-    choiceTexts = [term, ...distractorIndexes.map((i) => pool[i][0])];
+    choiceTexts = idxs.map((i) => pool[i][0]);
+    choiceNotesRaw = idxs.map((i) => `「${pool[i][0]}」は、${pool[i][1].replace(/。$/, "")}という意味。`);
   } else {
     question = `「${term}」の説明として正しいものを選びなさい。`;
-    correctText = definition;
-    choiceTexts = [definition, ...distractorIndexes.map((i) => pool[i][1])];
+    choiceTexts = idxs.map((i) => pool[i][1]);
+    choiceNotesRaw = idxs.map((i) => `この説明は「${pool[i][0]}」のもの。`);
   }
 
   const order = shuffle(choiceTexts.map((_, i) => i));
   const choices = order.map((i) => choiceTexts[i]);
+  const choiceNotes = order.map((i) => choiceNotesRaw[i]);
   const answer = order.indexOf(0);
+  const distractorTerm = pool[distractorIndexes[0]][0];
 
   return {
     id: `${genreId}_${termIndex}`,
@@ -53,7 +59,10 @@ function buildBasicQuestion(genreId, termIndex, direction) {
     choices,
     answer,
     explanation: `${term} — ${definition}`,
-    image: null,
+    choiceNotes,
+    distractorTerm,
+    term,
+    image: TERM_DIAGRAMS[term] || null,
   };
 }
 
@@ -73,6 +82,24 @@ function getSpecialPool(genreId) {
   return [...coding, ...applied];
 }
 
+/** ジャンルの問題総数(単語帳+手作り問題)。習得率の分母に使う */
+function genreQuestionTotal(genreId) {
+  return (GLOSSARY[genreId]?.length || 0) + getSpecialPool(genreId).length;
+}
+
+/** IDから問題を作り直す(復習用)。基本問題の出題方向は毎回ランダム */
+function getQuestionById(id) {
+  const m = /^(\w+)_(\d+)$/.exec(id);
+  if (m && GLOSSARY[m[1]] && GLOSSARY[m[1]][Number(m[2])]) {
+    return buildBasicQuestion(m[1], Number(m[2]), Math.random() < 0.5 ? "term" : "definition");
+  }
+  for (const g of GENRES) {
+    const found = getSpecialPool(g.id).find((q) => q.id === id);
+    if (found) return shuffleQuestionChoices(found);
+  }
+  return null;
+}
+
 /** 指定ジャンルから10問のセッションを生成する(基本問題+コーディング/応用問題の混合) */
 function getSessionQuestions(genreId, count = QUESTIONS_PER_SESSION) {
   const specialPool = getSpecialPool(genreId);
@@ -83,10 +110,22 @@ function getSessionQuestions(genreId, count = QUESTIONS_PER_SESSION) {
 
   const basicCount = count - chosenSpecial.length;
   const basicPool = GLOSSARY[genreId];
-  const basicIndexes = shuffle(basicPool.map((_, i) => i)).slice(0, basicCount);
-  const chosenBasic = basicIndexes.map((termIndex) =>
+  const allIdx = basicPool.map((_, i) => i);
+  // 説明図のある用語を一部必ず混ぜる(構造・手順・関係を図で確かめられるようにする)
+  const withDiagram = shuffle(allIdx.filter((i) => TERM_DIAGRAMS[basicPool[i][0]]));
+  const diagramPick = withDiagram.slice(0, Math.min(DIAGRAM_BASIC_PER_SESSION, basicCount));
+  const rest = shuffle(allIdx.filter((i) => !diagramPick.includes(i))).slice(0, basicCount - diagramPick.length);
+  const chosenBasic = [...diagramPick, ...rest].map((termIndex) =>
     buildBasicQuestion(genreId, termIndex, Math.random() < 0.5 ? "term" : "definition")
   );
 
   return shuffle([...chosenBasic, ...chosenSpecial]);
+}
+
+/** 復習セッション(期限が来た問題。1日の上限あり) */
+function getReviewQuestions(state, limit = REVIEW_DAILY_LIMIT) {
+  return getDueReviewIds(state)
+    .slice(0, limit)
+    .map(getQuestionById)
+    .filter(Boolean);
 }
