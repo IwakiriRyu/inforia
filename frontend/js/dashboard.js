@@ -44,8 +44,8 @@ requireAuth();
       </div>
       <button class="btn btn-primary review-btn" id="reviewStartBtn">復習する</button>
     `;
-    document.getElementById("reviewStartBtn").addEventListener("click", (e) => {
-      expandTo(e.currentTarget, "quiz.html?mode=review");
+    document.getElementById("reviewStartBtn").addEventListener("click", () => {
+      window.location.href = "quiz.html?mode=review";
     });
   } else {
     const next = nextReviewDate(state);
@@ -81,7 +81,7 @@ requireAuth();
       <div class="unit-arrow icon">${ICONS.arrowRight}</div>
     `;
     const goToQuiz = () => {
-      expandTo(el, `quiz.html?genre=${genre.id}`);
+      window.location.href = `quiz.html?genre=${genre.id}`;
     };
     el.addEventListener("click", goToQuiz);
     el.addEventListener("keydown", (e) => {
