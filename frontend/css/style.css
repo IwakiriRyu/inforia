@@ -1528,3 +1528,89 @@ body {
   font-weight: 800;
   color: var(--navy-700);
 }
+
+/* ── PC向けレイアウト(幅900px以上のときだけ有効。スマホの見た目は変えない) ── */
+@media (min-width: 900px) {
+  /* ナビがある画面: 下のナビを左のサイドバーにする */
+  .app-shell:has(.bottom-nav) {
+    max-width: 1120px;
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    grid-auto-rows: min-content;
+    align-content: start;
+  }
+
+  .app-shell:has(.bottom-nav) > * {
+    grid-column: 2;
+  }
+
+  .app-shell:has(.bottom-nav) > .app-main {
+    min-height: 0;
+    padding: 28px 20px 60px;
+  }
+
+  .app-shell:has(.bottom-nav) > .bottom-nav {
+    grid-column: 1;
+    grid-row: 1 / span 20;
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 6px;
+    padding: 84px 14px 20px;
+    border-top: none;
+    border-right: 1px solid var(--border);
+    background: linear-gradient(180deg, #fff, #f7f9fe);
+  }
+
+  .bottom-nav .nav-item {
+    flex: 0 0 auto;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+  }
+
+  .bottom-nav .nav-item .nav-icon {
+    font-size: 22px;
+  }
+
+  .bottom-nav .nav-item:hover {
+    background: #eef2fb;
+  }
+
+  .bottom-nav .nav-item.active {
+    background: #e6edfd;
+    color: var(--blue-500);
+  }
+
+  /* ダッシュボード: ジャンルを2列に */
+  #unitList {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 14px;
+  }
+
+  /* 成績: 統計を3列に */
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* クイズ・結果: 画面中央に読みやすい幅で表示 */
+  .app-shell:not(:has(.bottom-nav)) {
+    max-width: 760px;
+  }
+
+  .app-shell:not(:has(.bottom-nav)) .app-main {
+    padding: 28px 40px 60px;
+  }
+
+  .summary-hero {
+    margin: -28px -40px 0;
+  }
+}
