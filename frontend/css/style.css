@@ -1771,10 +1771,16 @@ body {
 .fx-bg span {
   position: absolute;
   bottom: -60px;
-  font-family: "SF Mono", Menlo, Consolas, monospace;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.16);
+  width: 1em;
+  height: 1em;
+  color: rgba(255, 255, 255, 0.2);
   animation: fx-rise linear infinite;
+}
+
+.fx-bg span svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 @keyframes fx-rise {
