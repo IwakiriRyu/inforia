@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Inforia - 新規登録</title>
 <link rel="stylesheet" href="css/style.css" />
+<script src="js/transition.js"></script>
 <link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#16296b" />
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
@@ -100,7 +101,7 @@
 
     const result = registerUser(username, email, password);
     if (result.ok) {
-      window.location.href = "home.html";
+      diveTo("home.html");
     } else {
       errorEl.textContent = result.message;
       errorEl.classList.add("show");

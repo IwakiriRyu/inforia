@@ -1924,3 +1924,123 @@ body {
 .auth-shell > *:not(.fx-bg) {
   position: relative;
 }
+
+/* ── 画面遷移「潜る」 ── */
+/* 出発側: カードが手前に出て、そのまま沈む。水の輪が広がり、画面が深い青に染まる */
+.diving .auth-card {
+  animation: dive-card 0.9s cubic-bezier(0.5, 0, 0.75, 0.4) forwards;
+  pointer-events: none;
+}
+
+.diving .auth-logo,
+.diving .auth-tagline {
+  animation: dive-fade 0.6s ease forwards;
+}
+
+@keyframes dive-card {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    filter: blur(0);
+  }
+  30% {
+    transform: scale(1.08) translateY(-6px);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.55) translateY(160px);
+    opacity: 0;
+    filter: blur(6px);
+  }
+}
+
+@keyframes dive-fade {
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+.dive-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 55%, #1e3a8a 0%, #0b1740 70%);
+  clip-path: circle(0% at 50% 55%);
+  animation: dive-cover 0.8s cubic-bezier(0.45, 0, 0.3, 1) 0.5s forwards;
+}
+
+.dive-overlay i {
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border-radius: 50%;
+  border: 0.5px solid rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  animation: dive-ripple 0.9s ease-out 0.55s forwards;
+}
+
+.dive-overlay i:nth-child(2) {
+  animation-delay: 0.67s;
+}
+
+.dive-overlay i:nth-child(3) {
+  animation-delay: 0.79s;
+}
+
+@keyframes dive-cover {
+  to {
+    clip-path: circle(150% at 50% 55%);
+  }
+}
+
+@keyframes dive-ripple {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(26);
+    opacity: 0;
+  }
+}
+
+/* 到着側: 深い青から、水面に浮かび上がるように現れる */
+.dive-entering body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 55%, #1e3a8a 0%, #0b1740 70%);
+  animation: dive-surface 1.1s ease-out forwards;
+}
+
+.dive-entering .app-shell {
+  animation: dive-rise 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes dive-surface {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes dive-rise {
+  0% {
+    transform: translateY(40px) scale(0.96);
+    filter: blur(8px);
+  }
+  100% {
+    transform: none;
+    filter: blur(0);
+  }
+}
