@@ -16,6 +16,14 @@
 
     <form id="registerForm" novalidate>
       <div class="form-field">
+        <label for="username">ユーザー名</label>
+        <div class="input-wrap">
+          <span class="icon" id="userIcon"></span>
+          <input type="text" id="username" name="username" placeholder="2〜20文字" required minlength="2" maxlength="20" autocomplete="username" />
+        </div>
+      </div>
+
+      <div class="form-field">
         <label for="email">メールアドレス</label>
         <div class="input-wrap">
           <span class="icon" id="mailIcon"></span>
@@ -53,6 +61,7 @@
 <script src="js/icons.js"></script>
 <script src="js/auth.js"></script>
 <script>
+  document.getElementById("userIcon").innerHTML = ICONS.user;
   document.getElementById("mailIcon").innerHTML = ICONS.mail;
   document.getElementById("keyIcon").innerHTML = ICONS.key;
   document.getElementById("keyIcon2").innerHTML = ICONS.key;
@@ -63,6 +72,7 @@
 
   document.getElementById("registerForm").addEventListener("submit", (e) => {
     e.preventDefault();
+    const username = document.getElementById("username").value.trim();
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
     const passwordConfirm = document.getElementById("passwordConfirm").value;
@@ -79,7 +89,7 @@
       return;
     }
 
-    const result = registerUser(email, password);
+    const result = registerUser(username, email, password);
     if (result.ok) {
       window.location.href = "index.html";
     } else {

@@ -50,12 +50,41 @@ function authTodayStr() {
   ).padStart(2, "0")}`;
 }
 
-function registerUser(email, password) {
+/** 表示用ユーザー名。ユーザー名未設定の旧アカウントはメールアドレスの@前を使う */
+function displayNameOf(user) {
+  if (!user) return "";
+  return user.username || (user.email ? user.email.split("@")[0] : "");
+}
+
+function currentUser() {
+  const email = currentUserEmail();
+  return loadUsers().find((u) => u.email === email) || null;
+}
+
+function currentUserName() {
+  return displayNameOf(currentUser());
+}
+
+function validateUsername(username) {
+  if (username.length < 2 || username.length > 20) {
+    return "ユーザー名は2〜20文字で入力してください。";
+  }
+  return null;
+}
+
+function registerUser(username, email, password) {
   const users = loadUsers();
+  const nameError = validateUsername(username);
+  if (nameError) {
+    return { ok: false, message: nameError };
+  }
+  if (users.some((u) => displayNameOf(u).toLowerCase() === username.toLowerCase())) {
+    return { ok: false, message: "このユーザー名はすでに使われています。" };
+  }
   if (users.some((u) => u.email === email)) {
     return { ok: false, message: "このメールアドレスはすでに登録されています。" };
   }
-  users.push({ email, password, registeredAt: authTodayStr() });
+  users.push({ username, email, password, registeredAt: authTodayStr() });
   saveUsers(users);
   setSession(email);
   return { ok: true };

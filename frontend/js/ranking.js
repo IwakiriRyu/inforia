@@ -6,7 +6,7 @@ requireAuth();
   renderBottomNav("ranking");
 
   const state = loadState();
-  const myEmail = currentUserEmail();
+  const myName = currentUserName();
   const { level } = xpProgressInLevel(state.xp);
 
   const mockUsers = [
@@ -21,7 +21,7 @@ requireAuth();
 
   const entries = [
     ...mockUsers.map((u) => ({ ...u, isMe: false })),
-    { name: myEmail ? myEmail.split("@")[0] : "あなた", xp: state.xp, isMe: true },
+    { name: myName || "あなた", xp: state.xp, isMe: true },
   ].sort((a, b) => b.xp - a.xp);
 
   const list = document.getElementById("rankingList");

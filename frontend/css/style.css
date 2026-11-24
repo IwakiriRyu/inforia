@@ -1002,9 +1002,16 @@ body {
   margin: 0 auto 12px;
 }
 
-.profile-hero .email {
+.profile-hero .username {
   font-weight: 700;
-  font-size: 15px;
+  font-size: 17px;
+  word-break: break-all;
+}
+
+.profile-hero .email {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-sub, #6b7280);
   word-break: break-all;
 }
 

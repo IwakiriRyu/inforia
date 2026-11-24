@@ -10,6 +10,7 @@ requireAuth();
   const { level } = xpProgressInLevel(state.xp);
 
   document.getElementById("avatarLevel").innerHTML = avatarHTML(level);
+  document.getElementById("userName").textContent = currentUserName();
   document.getElementById("userEmail").textContent = email || "";
   document.getElementById("infoLevel").textContent = `レベル ${level}`;
   document.getElementById("infoXp").textContent = `${state.xp} XP`;
