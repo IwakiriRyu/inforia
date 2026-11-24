@@ -25,6 +25,7 @@ requireAuth();
   let sessionCorrect = 0;
   const sessionResults = [];
   const sessionLog = [];
+  const levelBefore = xpProgressInLevel(state.xp).level;
 
   const HINTS_BY_GENRE = {
     society: "法律や権利は「誰を・何から守るためのものか」を考えてみよう。",
@@ -189,6 +190,10 @@ requireAuth();
       ? `+${rec.xpAward} XP獲得!${rec.xpAward < (XP_BY_TYPE[q.type] ?? 10) ? "(習得済みの問題は半分)" : ""}`
       : "もう一度挑戦してみよう";
 
+    if (isCorrect) {
+      requestAnimationFrame(() => Fx.confetti(el.resultIcon, 24));
+    }
+
     renderFigure(q);
     renderExplanation(q, isCorrect);
     el.reviewNote.innerHTML = `<span class="review-note-label">復習</span>${rec.review.text}`;
@@ -327,21 +332,38 @@ requireAuth();
       <div class="summary-ring-text">
         <span class="summary-ring-num">${sessionCorrect}</span><span class="summary-ring-total">/${total}</span>
       </div>`;
-    document.getElementById("summaryRate").textContent = `正解率 ${rate}%`;
+    Fx.countUp(document.getElementById("summaryRate"), rate, {
+      dur: 1000,
+      delay: 300,
+      fmt: (v) => `正解率 ${v}%`,
+    });
+    Fx.countUp(document.querySelector(".summary-ring-num"), sessionCorrect, { dur: 1000, delay: 300 });
 
     // 問題ごとの正解・不正解
     document.getElementById("summaryDots").innerHTML = sessionResults
       .map(
         (ok, i) =>
-          `<span class="summary-dot ${ok ? "ok" : "ng"}" title="問題 ${i + 1}">${
+          `<span class="summary-dot ${ok ? "ok" : "ng"}" style="--i:${i}" title="問題 ${i + 1}">${
             ok ? ICONS.check : ICONS.cross
           }</span>`
       )
       .join("");
 
-    document.getElementById("summaryCorrect").textContent = `${sessionCorrect}/${total}`;
+    Fx.countUp(document.getElementById("summaryCorrect"), sessionCorrect, {
+      dur: 900,
+      delay: 600,
+      fmt: (v) => `${v}/${total}`,
+    });
     document.getElementById("summaryXpIcon").innerHTML = ICONS.star;
-    document.getElementById("summaryXp").textContent = sessionXp;
+    Fx.countUp(document.getElementById("summaryXp"), sessionXp, { dur: 1100, delay: 700 });
+
+    // レベルアップ
+    const levelAfter = xpProgressInLevel(state.xp).level;
+    const levelUpEl = document.getElementById("summaryLevelUp");
+    if (levelAfter > levelBefore) {
+      levelUpEl.innerHTML = `<div class="summary-levelup-label">レベルアップ!</div><div class="summary-levelup-num">レベル ${levelBefore} → ${levelAfter}</div>`;
+      levelUpEl.style.display = "block";
+    }
 
     const badgesEl = document.getElementById("summaryBadges");
     if (newlyUnlocked.length > 0) {
@@ -397,6 +419,11 @@ requireAuth();
     document.getElementById("summaryView").style.display = "block";
     el.progressFill.style.width = "100%";
     window.scrollTo(0, 0);
+
+    // 紙吹雪(7割以上の正解、またはレベルアップのとき)
+    if (rate >= 70 || levelAfter > levelBefore) {
+      setTimeout(() => Fx.confetti(document.getElementById("summaryRing"), 40), 900);
+    }
 
     // 円グラフを動かす
     requestAnimationFrame(() =>

@@ -12,11 +12,25 @@ requireAuth();
   const { level, current, needed, percent } = xpProgressInLevel(state.xp);
   document.getElementById("avatarLevel").innerHTML = avatarHTML(level);
   document.getElementById("levelLabel").textContent = `レベル ${level}`;
-  document.getElementById("xpBarFill").style.width = `${Math.min(percent, 100)}%`;
-  document.getElementById("xpLabel").textContent = `${current} / ${needed} XP`;
+  // バーは0から伸び、XPの数字は数え上げる
+  const xpFill = document.getElementById("xpBarFill");
+  xpFill.style.width = Fx.reduce ? `${Math.min(percent, 100)}%` : "0%";
+  if (!Fx.reduce) setTimeout(() => (xpFill.style.width = `${Math.min(percent, 100)}%`), 350);
+  Fx.countUp(document.getElementById("xpLabel"), current, {
+    dur: 900,
+    delay: 350,
+    fmt: (v) => `${v} / ${needed} XP`,
+  });
 
-  // ストリーク表示
+  // ストリーク表示(日数が伸びるほど炎が大きくなる)
   document.getElementById("streakLabel").textContent = `${state.streak}日連続学習中`;
+  document.getElementById("flameIcon").style.fontSize = `${22 + Math.min(state.streak, 14)}px`;
+
+  // 上から順にふわっと現れる
+  [...document.querySelectorAll(".profile-row, .streak-banner, #reviewCard")].forEach((n, i) => {
+    n.classList.add("rise-in");
+    n.style.animationDelay = `${i * 70}ms`;
+  });
 
   // 今日の復習
   const dueCount = Math.min(getDueReviewIds(state).length, REVIEW_DAILY_LIMIT);
@@ -30,8 +44,8 @@ requireAuth();
       </div>
       <button class="btn btn-primary review-btn" id="reviewStartBtn">復習する</button>
     `;
-    document.getElementById("reviewStartBtn").addEventListener("click", () => {
-      window.location.href = "quiz.html?mode=review";
+    document.getElementById("reviewStartBtn").addEventListener("click", (e) => {
+      expandTo(e.currentTarget, "quiz.html?mode=review");
     });
   } else {
     const next = nextReviewDate(state);
@@ -67,7 +81,7 @@ requireAuth();
       <div class="unit-arrow icon">${ICONS.arrowRight}</div>
     `;
     const goToQuiz = () => {
-      window.location.href = `quiz.html?genre=${genre.id}`;
+      expandTo(el, `quiz.html?genre=${genre.id}`);
     };
     el.addEventListener("click", goToQuiz);
     el.addEventListener("keydown", (e) => {
@@ -76,6 +90,8 @@ requireAuth();
         goToQuiz();
       }
     });
+    el.classList.add("rise-in");
+    el.style.animationDelay = `${300 + GENRES.indexOf(genre) * 80}ms`;
     unitList.appendChild(el);
   });
 })();

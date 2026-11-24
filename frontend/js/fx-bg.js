@@ -46,4 +46,13 @@
     s.style.animationDelay = `${-Math.random() * 24}s`;
     host.appendChild(s);
   }
+
+  // 開始画面だけ: ポインタ(指)に合わせて背景が少しずれる
+  if (document.body.classList.contains("splash-body") && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    window.addEventListener("pointermove", (e) => {
+      const dx = (e.clientX / window.innerWidth - 0.5) * -36;
+      const dy = (e.clientY / window.innerHeight - 0.5) * -36;
+      host.style.transform = `translate(${dx}px, ${dy}px)`;
+    });
+  }
 })();

@@ -6,6 +6,17 @@
   const FLAG = "inforia_dive";
   const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  const EXPAND_FLAG = "inforia_expand";
+  try {
+    if (sessionStorage.getItem(EXPAND_FLAG) === "1") {
+      sessionStorage.removeItem(EXPAND_FLAG);
+      if (!reduce) {
+        document.documentElement.classList.add("expand-entering");
+        setTimeout(() => document.documentElement.classList.remove("expand-entering"), 900);
+      }
+    }
+  } catch (e) {}
+
   // ── 到着側: 潜ってきた直後だけ、水面から現れる演出を流す ──
   try {
     if (sessionStorage.getItem(FLAG) === "1") {
@@ -16,6 +27,32 @@
       }
     }
   } catch (e) {}
+
+  // ── カードが画面いっぱいに広がってから移動する(ホーム→クイズ) ──
+  window.expandTo = function (el, url) {
+    if (reduce || !el.animate) {
+      window.location.href = url;
+      return;
+    }
+    try {
+      sessionStorage.setItem(EXPAND_FLAG, "1");
+    } catch (e) {}
+    const r = el.getBoundingClientRect();
+    const layer = document.createElement("div");
+    layer.className = "expand-layer";
+    layer.style.cssText = `left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;`;
+    document.body.appendChild(layer);
+    layer.animate(
+      [
+        { left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`, borderRadius: "16px" },
+        { left: "0px", top: "0px", width: `${window.innerWidth}px`, height: `${window.innerHeight}px`, borderRadius: "0px" },
+      ],
+      { duration: 420, easing: "cubic-bezier(0.5, 0, 0.2, 1)", fill: "forwards" }
+    );
+    setTimeout(() => {
+      window.location.href = url;
+    }, 440);
+  };
 
   // ── 出発側: 画面を潜らせてから移動する ──
   window.diveTo = function (url) {

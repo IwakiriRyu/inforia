@@ -2044,3 +2044,198 @@ body {
     filter: blur(0);
   }
 }
+
+/* ── 演出 ── */
+/* 紙吹雪 */
+.fx-confetti {
+  position: fixed;
+  z-index: 9000;
+  pointer-events: none;
+  border-radius: 2px;
+}
+
+/* 正解: ぽんと弾む + 輪が広がる / 不正解: 左右に揺れる */
+.result-icon {
+  position: relative;
+}
+
+.result-icon.correct {
+  animation: fx-pop 0.6s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+
+.result-icon.correct::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid #22c55e;
+  animation: fx-burst 0.9s ease-out both;
+}
+
+.result-icon.incorrect {
+  animation: fx-shake 0.5s ease both;
+}
+
+@keyframes fx-pop {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fx-burst {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+
+@keyframes fx-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  18% {
+    transform: translateX(-10px);
+  }
+  36% {
+    transform: translateX(9px);
+  }
+  54% {
+    transform: translateX(-6px);
+  }
+  72% {
+    transform: translateX(4px);
+  }
+}
+
+/* 終了画面: 正誤のドットを順に弾ませる */
+.summary-dot {
+  animation: fx-dot 0.45s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+  animation-delay: calc(500ms + var(--i, 0) * 80ms);
+}
+
+@keyframes fx-dot {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* レベルアップ */
+.summary-levelup {
+  text-align: center;
+  color: #fff;
+  border: none;
+  background: linear-gradient(135deg, var(--gold), #ea580c);
+  animation: fx-glow 1.6s ease-in-out infinite;
+}
+
+.summary-levelup-label {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  opacity: 0.9;
+}
+
+.summary-levelup-num {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+@keyframes fx-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(245, 158, 11, 0);
+  }
+  50% {
+    box-shadow: 0 0 26px rgba(245, 158, 11, 0.75);
+  }
+}
+
+/* 炎のゆらぎ */
+.streak-banner .flame-icon {
+  transform-origin: 50% 90%;
+  animation: fx-flame 1.6s ease-in-out infinite;
+}
+
+@keyframes fx-flame {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+  30% {
+    transform: scale(1.08, 1.14) rotate(-4deg);
+  }
+  60% {
+    transform: scale(0.97, 1.05) rotate(3deg);
+  }
+}
+
+/* ホーム: 上から順にふわっと現れる */
+.rise-in {
+  animation: fx-rise-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes fx-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.xp-bar-fill {
+  transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ホーム→クイズ: カードが画面いっぱいに広がる */
+.expand-layer {
+  position: fixed;
+  z-index: 9998;
+  pointer-events: none;
+  background: linear-gradient(135deg, var(--navy-900), var(--blue-500));
+  box-shadow: 0 10px 40px rgba(15, 31, 77, 0.35);
+}
+
+.expand-entering body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  background: linear-gradient(135deg, var(--navy-900), var(--blue-500));
+  animation: dive-surface 0.6s ease-out forwards;
+}
+
+/* 開始画面: 指やカーソルに合わせて、背景のアイコンが少し動く */
+.splash .fx-bg {
+  transition: transform 0.35s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .result-icon.correct,
+  .result-icon.correct::after,
+  .result-icon.incorrect,
+  .summary-dot,
+  .summary-levelup,
+  .streak-banner .flame-icon,
+  .rise-in {
+    animation: none;
+  }
+}
