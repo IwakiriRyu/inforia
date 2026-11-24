@@ -14,6 +14,7 @@
 </head>
 <body>
 <div class="auth-shell">
+  <div class="fx-bg" id="fxBg" aria-hidden="true"></div>
   <div class="auth-logo">Inforia</div>
   <div class="auth-tagline">情報Iを楽しく、続けられる学習体験を。</div>
 
@@ -67,6 +68,7 @@
 <script src="js/pwa.js"></script>
 <script src="js/icons.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/fx-bg.js"></script>
 <script>
   document.getElementById("userIcon").innerHTML = ICONS.user;
   document.getElementById("mailIcon").innerHTML = ICONS.mail;
@@ -74,7 +76,7 @@
   document.getElementById("keyIcon2").innerHTML = ICONS.key;
 
   if (currentUserEmail()) {
-    window.location.href = "index.html";
+    window.location.href = "home.html";
   }
 
   document.getElementById("registerForm").addEventListener("submit", (e) => {
@@ -98,7 +100,7 @@
 
     const result = registerUser(username, email, password);
     if (result.ok) {
-      window.location.href = "index.html";
+      window.location.href = "home.html";
     } else {
       errorEl.textContent = result.message;
       errorEl.classList.add("show");

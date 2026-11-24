@@ -1,7 +1,7 @@
 /* Inforia — 共通ボトムナビゲーション */
 
 const NAV_ITEMS = [
-  { id: "home", label: "ホーム", href: "index.html", icon: "home" },
+  { id: "home", label: "ホーム", href: "home.html", icon: "home" },
   { id: "records", label: "成績", href: "records.html", icon: "chart" },
   { id: "ranking", label: "ランキング", href: "ranking.html", icon: "trophy" },
   { id: "profile", label: "マイページ", href: "profile.html", icon: "user" },

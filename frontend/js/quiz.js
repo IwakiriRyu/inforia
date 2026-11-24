@@ -16,7 +16,7 @@ requireAuth();
   let genre = GENRES.find((g) => g.id === genreId) || GENRES[0];
   const questions = isReview ? getReviewQuestions(state) : getSessionQuestions(genreId, QUESTIONS_PER_SESSION);
   if (questions.length === 0) {
-    window.location.href = "index.html";
+    window.location.href = "home.html";
     return;
   }
   let index = 0;
@@ -24,6 +24,7 @@ requireAuth();
   let sessionXp = 0;
   let sessionCorrect = 0;
   const sessionResults = [];
+  const sessionLog = [];
 
   const HINTS_BY_GENRE = {
     society: "法律や権利は「誰を・何から守るためのものか」を考えてみよう。",
@@ -73,7 +74,7 @@ requireAuth();
   renderQuestion();
 
   el.closeBtn.addEventListener("click", () => {
-    window.location.href = "index.html";
+    window.location.href = "home.html";
   });
 
   el.hintBtn.addEventListener("click", () => {
@@ -174,6 +175,7 @@ requireAuth();
     const rec = recordAnswer(state, q.genreId || genre.id, q.id, isCorrect, q.type);
     const newlyUnlocked = rec.newlyUnlocked;
     sessionResults.push(isCorrect);
+    sessionLog.push({ q, selected: selectedChoice, isCorrect });
     if (isCorrect) {
       sessionXp += rec.xpAward;
       sessionCorrect += 1;
@@ -205,8 +207,7 @@ requireAuth();
   }
 
   /** 3点の解説: 正解の理由 / よくある間違い / 次の一歩 */
-  function renderExplanation(q, isCorrect) {
-    const correctText = q.choices[q.answer];
+  function explanationItems(q, isCorrect, selected) {
     let reason;
     let mistake;
     let next;
@@ -214,7 +215,7 @@ requireAuth();
     if (q.type === "basic") {
       reason = q.explanation;
       if (!isCorrect && q.choiceNotes) {
-        mistake = `選んだ答えについて: ${q.choiceNotes[selectedChoice]}`;
+        mistake = `選んだ答えについて: ${q.choiceNotes[selected]}`;
       } else {
         const wrongIdx = q.choices.findIndex((_, i) => i !== q.answer);
         mistake = `取り違えやすい例: ${q.choiceNotes ? q.choiceNotes[wrongIdx] : "似た用語との混同に注意。"}`;
@@ -229,12 +230,15 @@ requireAuth();
           : "ほかの選択肢が、なぜ適切でないのかを説明してみよう。";
     }
 
-    const items = [
+    return [
       ["正解の理由", reason, "accent"],
       ["よくある間違い", mistake, "warn"],
       ["次の一歩", next, "accent"],
     ];
-    el.explainList.innerHTML = items
+  }
+
+  function explanationHTML(items) {
+    return items
       .map(
         (it, i) => `
         <div class="explain-item ${it[2]}">
@@ -246,6 +250,10 @@ requireAuth();
         </div>`
       )
       .join("");
+  }
+
+  function renderExplanation(q, isCorrect) {
+    el.explainList.innerHTML = explanationHTML(explanationItems(q, isCorrect, selectedChoice));
   }
 
   function escapeHtml(str) {
@@ -358,6 +366,32 @@ requireAuth();
       reviewEl.style.display = "block";
     }
 
+    document.getElementById("summaryReviewList").innerHTML = sessionLog
+      .map(({ q, selected, isCorrect }, i) => {
+        const choices = q.choices
+          .map((c, ci) => {
+            const cls = ci === q.answer ? "correct" : ci === selected ? "incorrect" : "";
+            const tag = ci === q.answer ? "正解" : ci === selected ? "あなたの答え" : "";
+            return `<div class="rv-choice ${cls}"><span>${c}</span>${tag ? `<em>${tag}</em>` : ""}</div>`;
+          })
+          .join("");
+        const fig = q.image ? `<div class="rv-figure">${q.image.svg}</div>` : "";
+        return `
+          <details class="rv-item ${isCorrect ? "ok" : "ng"}">
+            <summary>
+              <span class="rv-mark">${isCorrect ? ICONS.check : ICONS.cross}</span>
+              <span class="rv-q"><b>問${i + 1}</b> ${escapeHtml(q.question)}</span>
+            </summary>
+            <div class="rv-body">
+              ${q.code ? `<pre class="code-block">${escapeHtml(q.code)}</pre>` : ""}
+              <div class="rv-choices">${choices}</div>
+              ${fig}
+              <div class="explain-list">${explanationHTML(explanationItems(q, isCorrect, selected))}</div>
+            </div>
+          </details>`;
+      })
+      .join("");
+
     el.resultView.style.display = "none";
     el.quizView.style.display = "none";
     document.getElementById("summaryView").style.display = "block";
@@ -372,7 +406,7 @@ requireAuth();
     );
 
     document.getElementById("summaryHomeBtn").addEventListener("click", () => {
-      window.location.href = "index.html";
+      window.location.href = "home.html";
     });
   }
 })();
